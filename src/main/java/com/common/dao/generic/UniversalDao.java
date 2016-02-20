@@ -281,14 +281,7 @@ public class UniversalDao {
 		if (obj == null) {
 			return criteria;
 		} else {
-			if(obj instanceof Map){
-				Map condition=(Map)obj;
-				condition(criteria,condition);
-			} else {
-				Example example = getExample(obj, includeZeros, isLike);
-				
-				criteria.add(example);
-			}
+			conditionByObj(obj, includeZeros, isLike, criteria);
 			return criteria;
 		}
 	}
@@ -473,23 +466,21 @@ public class UniversalDao {
 								   boolean includeZeros, int first, int maxRecordsNum, boolean isLike) {
 		Criteria criteria = this.getCurrentSession().createCriteria(clz);
 		if(!ValueWidget.isNullOrEmpty(obj)){
-			if(obj instanceof Map){
-				Map condition=(Map)obj;
-				condition(criteria, condition);
-			}else{
-				Example example=Example.create(obj);
-				if (!includeZeros) {
-					example = example.excludeZeroes();
-				}
-				if (isLike) {
-					example.enableLike(MatchMode.ANYWHERE);
-				}
-				criteria.add(example);
-			}
+			conditionByObj(obj, includeZeros, isLike, criteria);
 		}
 		
 		paging(criteria, first, maxRecordsNum);
 		return criteria;
+	}
+
+	private void conditionByObj(Object obj, boolean includeZeros, boolean isLike, Criteria criteria) {
+		if (obj instanceof Map) {
+			Map condition = (Map) obj;
+			condition(criteria, condition);
+		} else {
+			Example example = getExample(obj, includeZeros, isLike);
+			criteria.add(example);
+		}
 	}
 
 	public void update(Object obj) {

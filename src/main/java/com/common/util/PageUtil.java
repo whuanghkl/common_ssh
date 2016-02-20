@@ -69,7 +69,7 @@ java.sql.SQLException: ResultSet may only be accessed in a forward direction.*/
 		long count = dao
 				.listByPage(condition,false/*includeZeros*/,false/*isLike*/, list, start, view.getRecordsPerPage(),false/*isDistinctRoot*/,orderMode,orderColumn,notNullColumn,orderMode2,orderColumn2);
 		view.setRecordList(list);
-		System.out.println(" total sum:"+count);
+		
 		paging(count, view);
 	}
 	 /***
@@ -245,6 +245,7 @@ java.sql.SQLException: ResultSet may only be accessed in a forward direction.*/
 	}
 	
 	public static void paging(long count,PageView view){
+		System.out.println("total sum:"+count);
 //		view.setRecordList(list);
 		view.setTotalRecords(count);
 		int totalPages = PageUtil.getTotalPages(view.getTotalRecords(),

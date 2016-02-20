@@ -25,6 +25,7 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 
 import com.common.bean.OrderByBean;
+import com.common.util.LoginUtil;
 import com.common.util.ReflectHWUtils;
 import com.common.util.SystemHWUtil;
 import com.string.widget.util.ValueWidget;
@@ -51,6 +52,7 @@ public class UniversalDao {
 		if(ValueWidget.isNullOrEmpty(session)){
 			System.out.println("this.sessionFactory.getCurrentSession() return null!!!");
 			session=this.sessionFactory.openSession();
+			System.out.println("invoke this.sessionFactory.openSession()");
 		}
 		return session;
 	}
@@ -63,7 +65,8 @@ public class UniversalDao {
 	 */
 	public void delete(Object obj) {
 		if(ValueWidget.isNullOrEmpty(obj)){
-			logger.warn("obj is null");
+			logger.warn("delete BUT obj is null");
+			System.out.println("delete BUT obj is null");
 			return;
 		}
 		this.getCurrentSession().delete(obj);

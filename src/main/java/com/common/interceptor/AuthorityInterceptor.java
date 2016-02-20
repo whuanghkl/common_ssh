@@ -39,6 +39,7 @@ public class AuthorityInterceptor extends AbstractInterceptor {
 			isNeedLogin = true;
 		}
 		if (isNeedLogin) {//需要登录
+			System.out.println("AuthorityInterceptor isNeedLogin:"+isNeedLogin);
 			Map<String, Object> session = invocation.getInvocationContext()
 					.getSession();
 			// 判断用户是否登录，若在session中能够找到用户，则证明用户已经登录过

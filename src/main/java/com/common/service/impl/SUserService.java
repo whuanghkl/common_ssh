@@ -54,6 +54,7 @@ public abstract class SUserService<T extends GenericUser> implements
 		user = this.userDao.getByName(aUser);
 
 		if (user == null) {
+			System.out.println("can NOT find user username is "+aUser);
 			results[0] = LoginUtil.LOGIN_RESULT_USER_NOT_EXIST;
 			return results;
 		} else {

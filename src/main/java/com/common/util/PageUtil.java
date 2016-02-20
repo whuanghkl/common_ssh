@@ -1,15 +1,14 @@
 package com.common.util;
 
+import com.common.dao.generic.GenericDao;
+import com.common.web.view.PageView;
+import com.string.widget.util.ValueWidget;
+import org.apache.commons.collections.map.ListOrderedMap;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.collections.map.ListOrderedMap;
-
-import com.common.dao.generic.GenericDao;
-import com.common.web.view.PageView;
-import com.string.widget.util.ValueWidget;
 
 public class PageUtil {
 
@@ -177,6 +176,15 @@ java.sql.SQLException: ResultSet may only be accessed in a forward direction.*/
 		List list = new ArrayList();
 		int start = (view.getCurrentPage() - 1)
 				* view.getRecordsPerPage();
+		convertEmpty2Null(conditionObj);
+		long count = dao
+				.listByPage(conditionObj, false/*includeZeros*/, isLike, list, start, view.getRecordsPerPage(), false/* isDistinctRoot */, orderModel, orderColumn, notNullColumn, orderMode2, orderColumn2);
+		view.setRecordList(list);
+		view.setRecordNumOfCurrent(list.size());
+		paging(count, view);
+	}
+
+	public static void convertEmpty2Null(Object conditionObj) {
 		if(!ValueWidget.isNullOrEmpty(conditionObj)){
 			try {
 				//把对象中空字符串改为null
@@ -191,12 +199,8 @@ java.sql.SQLException: ResultSet may only be accessed in a forward direction.*/
 				e.printStackTrace();
 			}
 		}
-		long count = dao
-				.listByPage(conditionObj,false/*includeZeros*/,isLike	, list, start, view.getRecordsPerPage(),false/* isDistinctRoot */,orderModel,orderColumn,notNullColumn,orderMode2,orderColumn2);
-		view.setRecordList(list);
-		view.setRecordNumOfCurrent(list.size());
-		paging(count, view);
 	}
+
 	/***
 	 * 
 	 * @param conditionObj
@@ -210,20 +214,7 @@ java.sql.SQLException: ResultSet may only be accessed in a forward direction.*/
 		List list = new ArrayList();
 		int start = (view.getCurrentPage() - 1)
 				* view.getRecordsPerPage();
-		if(!ValueWidget.isNullOrEmpty(conditionObj)){
-			try {
-				//把对象中空字符串改为null
-				ReflectHWUtils.convertEmpty2Null(conditionObj);
-			} catch (SecurityException e) {
-				e.printStackTrace();
-			} catch (NoSuchFieldException e) {
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
-		}
+		convertEmpty2Null(conditionObj);
 		long count = dao
 				.listByPage(conditionObj,false/*includeZeros*/,isLike	, list, start, view.getRecordsPerPage(),false/* isDistinctRoot */,notNullColumn,orderColumnModeMap);
 		view.setRecordList(list);

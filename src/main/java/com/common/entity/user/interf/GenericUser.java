@@ -57,4 +57,10 @@ public class GenericUser implements Serializable {
 		this.password = password;
 	}
 
+	@Override
+	public String toString() {
+		return "GenericUser [username=" + username + ", password=" + password
+				+ "]";
+	}
+
 }

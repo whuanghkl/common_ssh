@@ -1,42 +1,43 @@
 package com.common.dao.generic;
 
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
+import com.common.bean.OrderByBean;
+import com.common.util.ReflectHWUtils;
+import com.common.util.SystemHWUtil;
+import com.string.widget.util.ValueWidget;
 import org.apache.commons.collections.map.ListOrderedMap;
 import org.apache.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.Example;
-import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.ProjectionList;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.*;
 
-import com.common.bean.OrderByBean;
-import com.common.util.LoginUtil;
-import com.common.util.ReflectHWUtils;
-import com.common.util.SystemHWUtil;
-import com.string.widget.util.ValueWidget;
+import javax.annotation.Resource;
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 /***
  * 通用的dao
  * @author huangweii
  * 2015年11月21日
  */
 public class UniversalDao {
-	private Logger logger = Logger.getLogger(this.getClass());
+	private static Logger logger = Logger.getLogger(UniversalDao.class);
 	protected SessionFactory sessionFactory;
+
+	private static Object[] formatRSObjects(Object result) {
+		Object[] objs = null;
+		if (result instanceof Object[]) {
+			objs = (Object[]) result;
+		} else {//当只返回一个成员变量的时候
+			objs = new Object[]{result};
+		}
+		return objs;
+	}
+
 	public SessionFactory getSessionFactory() {
 		return sessionFactory;
 	}
@@ -47,6 +48,7 @@ public class UniversalDao {
 		logger.debug("sessionFactory is setted successfully.");
 //		logger.debug(this.sessionFactory);
 	}
+
 	public Session getCurrentSession(){
 		Session session=this.sessionFactory.getCurrentSession();
 		if(ValueWidget.isNullOrEmpty(session)){
@@ -57,9 +59,8 @@ public class UniversalDao {
 		return session;
 	}
 
-
 	/***
-	 * 
+	 *
 	 * @param obj
 	 *            :Must not be detached (other state is persistent,transient)
 	 */
@@ -82,11 +83,11 @@ public class UniversalDao {
 			e.printStackTrace();
 		}
 	}
-	
+
 	protected Criteria orderBy(String orderedColumn,String orderByMode,Criteria criteria){
 		if(!ValueWidget.isNullOrEmpty(orderedColumn)
 				&& !ValueWidget.isNullOrEmpty(criteria)){
-			if(!ValueWidget.isNullOrEmpty(orderByMode) 
+			if (!ValueWidget.isNullOrEmpty(orderByMode)
 					&&orderByMode.equalsIgnoreCase("asc")){
 				criteria.addOrder(Order.asc(orderedColumn));
 			}else{
@@ -95,6 +96,13 @@ public class UniversalDao {
 		}
 		return criteria;
 	}
+
+	/***
+	 * @param clazz
+	 * @param notNullColumn : 类型必须是String类型
+	 * @param criteria
+	 * @return
+	 */
 	protected Criteria notNullColumn(Class clazz,String notNullColumn,Criteria criteria){
 		if(!ValueWidget.isNullOrEmpty(notNullColumn)
 				&& !ValueWidget.isNullOrEmpty(criteria)){
@@ -114,6 +122,7 @@ public class UniversalDao {
 		}
 		return criteria;
 	}
+
 	protected List<OrderByBean> orderByBeans(String orderByMode,String orderedColumn,String orderByMode2,String orderedColumn2){
 		List<OrderByBean> list=new ArrayList<OrderByBean>();
 		OrderByBean byBean=new OrderByBean(orderByMode,orderedColumn);
@@ -122,78 +131,73 @@ public class UniversalDao {
 		list.add(byBean);
 		return list;
 	}
+
 	/***
      * 通过id,查询到一条记录,但是只返回指定的两个字段
      * @param id
-     * @param propertyName1 : 类的成员变量
-     * @param propertyName2 : 类的成员变量
-     * @return
-     */
-    public Object[] getPropertiesById2(Class clz,int id,String propertyName1,String propertyName2){
-    	/*Criteria c=this.getCurrentSession().createCriteria(clz);
+	 * @param propertyName1 : 类的成员变量
+	 * @param propertyName2 : 类的成员变量
+	 * @return
+	 */
+	public Object[] getPropertiesById2(Class clz, int id, String propertyName1, String propertyName2) {
+		/*Criteria c=this.getCurrentSession().createCriteria(clz);
     	ProjectionList projectionList=Projections.projectionList()
     			.add(Projections.property(propertyName1));
     	if(!ValueWidget.isNullOrEmpty(propertyName2)){
     		projectionList.add(Projections.property(propertyName2));
     	}*/
-    	String[] propertyNames=new String[]{propertyName1,propertyName2};
-    	return getPropertiesById2(clz, id, propertyNames);
+		String[] propertyNames = new String[]{propertyName1, propertyName2};
+		return getPropertiesById2(clz, id, propertyNames);
     }
-    /***
-     * 通过数据库ID查询一条记录,但是只返回指定的字段<br>
-     * 注意权限的校验,只有授予权限才能调用该方法,即一定要验权
-     * @param id
-     * @param propertyNames : 指定的多个成员变量
-     * @return
-     */
-    public Object[] getPropertiesById2(Class clz,int id,String[] propertyNames){
-    	Criteria c=this.getCurrentSession().createCriteria(clz);
-    	ProjectionList projectionList=Projections.projectionList();
-    	if(!ValueWidget.isNullOrEmpty(propertyNames)){
-    		for (int i = 0; i < propertyNames.length; i++) {
+
+	/***
+	 * 通过数据库ID查询一条记录,但是只返回指定的字段<br>
+	 * 注意权限的校验,只有授予权限才能调用该方法,即一定要验权
+	 * @param id
+	 * @param propertyNames : 指定的多个成员变量
+	 * @return
+	 */
+	public Object[] getPropertiesById2(Class clz, int id, String[] propertyNames) {
+		Criteria c = this.getCurrentSession().createCriteria(clz);
+		ProjectionList projectionList = Projections.projectionList();
+		if (!ValueWidget.isNullOrEmpty(propertyNames)) {
+			for (int i = 0; i < propertyNames.length; i++) {
 				String string = propertyNames[i];
-				if(!ValueWidget.isNullOrEmpty(string)){
+				if (!ValueWidget.isNullOrEmpty(string)) {
 					projectionList.add(Projections.property(string));
 				}
 			}
-    	}
-    	Object result=c.add(Restrictions.idEq(id)).setProjection(projectionList).uniqueResult();
-    	Object[]objs=null;
-    	if(result instanceof Object[]){
-    		objs=(Object[])result;
-    	}else{//当只返回一个成员变量的时候
-    		objs=new Object[]{result};
-    	}
-    	return objs;
-    	
+		}
+		Object result = c.add(Restrictions.idEq(id)).setProjection(projectionList).uniqueResult();
+		Object[] objs = formatRSObjects(result);
+		return objs;
+
     }
-    /***
-     * 通过id,查询到一条记录,但是只返回指定的两个字段
-     * @param id
-     * @param propertyName1 : 类的成员变量
-     * @param propertyName2 : 类的成员变量
-     * @return
-     */
-    public Object[] getPropertiesById(String  entityName,int id,String propertyName1,String propertyName2){
-    	String hql="select "+propertyName1;
-    	if(!ValueWidget.isNullOrEmpty(propertyName2)){
-    		hql+=","+propertyName2;
-    	}
-    	String parameterId="id22";
-    	hql+=" from "+entityName+" c where c.id=:"+parameterId;
-    	
-    	Query q= this.getCurrentSession().createQuery(hql);
-    	Object result=q.setInteger(parameterId, id).uniqueResult();
-    	Object[]objs=null;
-    	if(result instanceof Object[]){
-    		objs=(Object[])result;
-    	}else{//当只返回一个成员变量的时候
-    		objs=new Object[]{result};
-    	}
-    	return objs;
-    }
-    /***
-     * 根据id查询单个列,比如查询用户名
+
+	/***
+	 * 通过id,查询到一条记录,但是只返回指定的两个字段
+	 *
+	 * @param id
+	 * @param propertyName1 : 类的成员变量
+	 * @param propertyName2 : 类的成员变量
+	 * @return
+	 */
+	public Object[] getPropertiesById(String entityName, int id, String propertyName1, String propertyName2) {
+		String hql = "select " + propertyName1;
+		if (!ValueWidget.isNullOrEmpty(propertyName2)) {
+			hql += "," + propertyName2;
+		}
+		String parameterId = "id22";
+		hql += " from " + entityName + " c where c.id=:" + parameterId;
+
+		Query q = this.getCurrentSession().createQuery(hql);
+		Object result = q.setInteger(parameterId, id).uniqueResult();
+		Object[] objs = formatRSObjects(result);
+		return objs;
+	}
+
+	/***
+	 * 根据id查询单个列,比如查询用户名
      * @param id : unique
      * @param propertyName : 类的成员变量
      * @return
@@ -233,8 +237,8 @@ public class UniversalDao {
 	 * @param condition
 	 * @return
 	 */
-	protected Criteria condition(Criteria criteria,Map condition){
-		if (condition != null && (!condition.isEmpty())) {
+	protected Criteria condition(Criteria criteria, Map condition) {
+		if (!ValueWidget.isNullOrEmpty(condition)) {
 			Iterator it = condition.entrySet().iterator();
 			logger.debug("start to set query condition:");
 			while (it.hasNext()) {
@@ -280,14 +284,8 @@ public class UniversalDao {
 			if(obj instanceof Map){
 				Map condition=(Map)obj;
 				condition(criteria,condition);
-			}else{
-				Example example = Example.create(obj);
-				if (!includeZeros) {
-					example = example.excludeZeroes();
-				}
-				if(isLike){
-					example.enableLike(MatchMode.ANYWHERE);
-				}
+			} else {
+				Example example = getExample(obj, includeZeros, isLike);
 				
 				criteria.add(example);
 			}
@@ -326,18 +324,24 @@ public class UniversalDao {
 		if (obj == null) {
 			return this.getCriteriaByPage(clz,condition, -1, -1,isDistinctRoot);
 		} else {
-			Example example = Example.create(obj);
-			if (!includeZeros) {
-				example = example.excludeZeroes();
-			}
-			if(isLike){
-				example.enableLike(MatchMode.ANYWHERE);
-			}
-			Criteria criteria = getCriteriaByPage(clz,condition, -1, -1,isDistinctRoot);
+			Example example = getExample(obj, includeZeros, isLike);
+			Criteria criteria = getCriteriaByPage(clz, condition, SystemHWUtil.NEGATIVE_ONE, SystemHWUtil.NEGATIVE_ONE,isDistinctRoot);
 			criteria.add(example);
 			return criteria;
 		}
 	}
+
+	private Example getExample(Object obj, boolean includeZeros, boolean isLike) {
+		Example example = Example.create(obj);
+		if (!includeZeros) {
+			example = example.excludeZeroes();
+		}
+		if (isLike) {
+			example.enableLike(MatchMode.ANYWHERE);
+		}
+		return example;
+	}
+
 	protected Criteria getCriteria(Class clz,Map condition, Object obj, boolean includeZeros,boolean isLike){
 		return getCriteria(clz,condition, obj, includeZeros, false,isLike);
 	}
@@ -366,13 +370,7 @@ public class UniversalDao {
 			int maxRecordsNum,boolean isLike) {
 		Criteria criteria = this.getCurrentSession()
 				.createCriteria(clz);
-		Example example=Example.create(obj);
-		if (!includeZeros) {
-			example = example.excludeZeroes();
-		}
-		if(isLike){
-			example.enableLike(MatchMode.ANYWHERE);
-		}
+		Example example = getExample(obj, includeZeros, isLike);
 		criteria.add(example);
 		paging(criteria, first, maxRecordsNum);
 		return criteria;
@@ -471,8 +469,8 @@ public class UniversalDao {
 	public long count(Class clz,Map condition ) {
 		return count(clz,condition, false/*isDistinctRoot*/);
 	}
-	protected Criteria getCriteria(Class clz,Object obj,
-			boolean includeZeros, int first, int maxRecordsNum) {
+	protected Criteria getCriteria(Class clz, Object obj,
+								   boolean includeZeros, int first, int maxRecordsNum, boolean isLike) {
 		Criteria criteria = this.getCurrentSession().createCriteria(clz);
 		if(!ValueWidget.isNullOrEmpty(obj)){
 			if(obj instanceof Map){
@@ -482,6 +480,9 @@ public class UniversalDao {
 				Example example=Example.create(obj);
 				if (!includeZeros) {
 					example = example.excludeZeroes();
+				}
+				if (isLike) {
+					example.enableLike(MatchMode.ANYWHERE);
 				}
 				criteria.add(example);
 			}
@@ -541,9 +542,23 @@ public class UniversalDao {
 		.setInteger("id", id)
 		.executeUpdate();
 	}
-	
+
 	/***
-	 * 
+	 * 只更新一个字段
+	 *
+	 * @param id           : 数据库ID
+	 * @param propertyName : 成员变量名称
+	 * @param value        : 成员变量的值,即查询条件
+	 */
+	public void updateSpecail(Class clz, int id, String propertyName, int value) {
+		this.getCurrentSession().createQuery("update " + clz.getSimpleName() + " p set p." + propertyName + "=:column2322 where p.id=:id")
+				.setInteger("column2322", value)
+				.setInteger("id", id)
+				.executeUpdate();
+	}
+
+	/***
+	 *
 	 * @param obj
 	 * @param includeZeros
 	 * @param isLike
@@ -658,14 +673,9 @@ public class UniversalDao {
     	hql+=" from "+entityName/*clz.getCanonicalName()*/+" c where c.id=:"+parameterId;
     	
     	Query q= this.sessionFactory.getCurrentSession().createQuery(hql);
-    	Object result=q.setInteger(parameterId, id).uniqueResult();
-    	Object[]objs=null;
-    	if(result instanceof Object[]){
-    		objs=(Object[])result;
-    	}else{//当只返回一个成员变量的时候
-    		objs=new Object[]{result};
-    	}
-    	return objs;
+    	Object result = q.setInteger(parameterId, id).uniqueResult();
+		Object[] objs = formatRSObjects(result);
+		return objs;
     }
     /***
 	 * 分页查询，并且查询结果存储在参数list中
@@ -678,18 +688,8 @@ public class UniversalDao {
 	 * @return : 总记录条数
 	 */
 	public long listByPage(Class clz,Map condition, List list, int first,
-			int maxRecordsNum,boolean isDistinctRoot) {
-		if (list == null) {
-			Class clazz = this.getClass();// 因为是实例方法，所以可以用this
-			String className = clazz.getCanonicalName();/* com.jn.bean.Student */
-			Thread currentThread = Thread.currentThread();
-			StackTraceElement stackElement = currentThread.getStackTrace()[1];
-			// 当前的方法名
-			String methodName = stackElement.getMethodName();
-			logger.error("list is null.");
-			throw new RuntimeException(className + "." + methodName
-					+ ": list must not be null");
-		}
+						   int maxRecordsNum,boolean isDistinctRoot) {
+		listIsNull(list);
 
 		Criteria criteria = getCriteriaByPage(clz,condition, first, maxRecordsNum,isDistinctRoot);
 
@@ -753,14 +753,7 @@ public class UniversalDao {
 		/*if(this.clz.getName().contains("com.entity.Product")){// taobao定制
 			criteria2.addOrder(Order.desc("yuliu2"));
 		}*/
-		if(orderColumnModeMap!=null){
-			int orderLength=orderColumnModeMap.size();
-			for(int i=0;i<orderLength;i++){
-				String orderMode =(String)orderColumnModeMap.getValue(i);
-				String orderColumn=(String)orderColumnModeMap.get(i);
-				orderBy(orderColumn, orderMode, criteria2);
-			}
-		}
+		orderBy(orderColumnModeMap, criteria2);
 		paging(criteria2, first, maxRecordsNum);
 		list.addAll(criteria2.list());/* 获取查询结果 */
 		
@@ -808,15 +801,9 @@ public class UniversalDao {
 		if(count<1){
 			return count;
 		}
-		Criteria criteria2=getCriteria(clz,condition, columns, keyword);
-		if(orderColumnModeMap!=null){
-			int orderLength=orderColumnModeMap.size();
-			for(int i=0;i<orderLength;i++){
-				String orderMode =(String)orderColumnModeMap.getValue(i);
-				String orderColumn=(String)orderColumnModeMap.get(i);
-				orderBy(orderColumn, orderMode, criteria2);
-			}
-		}
+		Criteria criteria2 = getCriteria(clz, condition, columns, keyword);
+
+		orderBy(orderColumnModeMap, criteria2);
 //		orderBy(orderColumn2, orderMode2, criteria2);
 		paging(criteria2, first, maxRecordsNum);
 		
@@ -824,4 +811,28 @@ public class UniversalDao {
 		return count;
 	}
 
+	protected void orderBy(ListOrderedMap orderColumnModeMap, Criteria criteria2) {
+		if (orderColumnModeMap != null) {
+			int orderLength = orderColumnModeMap.size();
+			for (int i = 0; i < orderLength; i++) {
+				String orderMode = (String) orderColumnModeMap.getValue(i);
+				String orderColumn = (String) orderColumnModeMap.get(i);
+				orderBy(orderColumn, orderMode, criteria2);
+			}
+		}
+	}
+
+	public void listIsNull(List list) {
+		if (list == null) {
+			Class clazz = this.getClass();// 因为是实例方法，所以可以用this
+			String className = clazz.getCanonicalName();/* com.jn.bean.Student */
+			Thread currentThread = Thread.currentThread();
+			StackTraceElement stackElement = currentThread.getStackTrace()[1];
+			// 当前的方法名
+			String methodName = stackElement.getMethodName();
+			logger.error("list is null.");
+			throw new RuntimeException(className + "." + methodName
+					+ ": list must not be null");
+		}
+	}
 }

@@ -1,9 +1,5 @@
 package com.common.interceptor;
 
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-
 import com.common.entity.user.interf.GenericUser;
 import com.common.util.LoginUtil;
 import com.opensymphony.xwork2.ActionInvocation;
@@ -11,9 +7,13 @@ import com.opensymphony.xwork2.ActionProxy;
 import com.opensymphony.xwork2.interceptor.AbstractInterceptor;
 import com.opensymphony.xwork2.util.ValueStack;
 import com.string.widget.util.ValueWidget;
+import org.apache.log4j.Logger;
+
+import java.util.Map;
 
 /***
- * 权限校验的拦截器,判断用户是否登录, 若未登录，则不允许访问goods和supermarket 。
+ * 权限校验的拦截器,判断用户是否登录, 若未登录，则不允许访问goods和supermarket 。<br>
+ * 用于Struts2
  * 
  * @author huangwei
  * 

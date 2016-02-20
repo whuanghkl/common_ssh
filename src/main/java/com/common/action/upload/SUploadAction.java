@@ -1,13 +1,11 @@
 package com.common.action.upload;
 
-import java.io.File;
-
-import javax.servlet.ServletContext;
-
-import org.apache.struts2.ServletActionContext;
-
 import com.common.util.WebServletUtil;
 import com.opensymphony.xwork2.ActionSupport;
+import org.apache.struts2.ServletActionContext;
+
+import javax.servlet.ServletContext;
+import java.io.File;
 /***
  * 下载、上传的action 父类.
  * 
@@ -38,6 +36,7 @@ public class SUploadAction extends ActionSupport {
 		// D:\apache-tomcat-6.0.18\webapps\struts2_upload\images
 		// System.out.println("realpath: "+realpath);
 		if (newFileName == null) {
+			System.out.println("newFileName is null");
 			return new File(realpath);
 		} else {
 			File savefile = new File(new File(realpath), newFileName);

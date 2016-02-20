@@ -3,7 +3,8 @@ package com.common.action.error;
 import com.opensymphony.xwork2.ActionSupport;
 
 /***
- * 自定义的404 页面.
+ * 自定义的404 页面.<br>
+ * 用于Struts2
  * 
  * @author huangwei
  *

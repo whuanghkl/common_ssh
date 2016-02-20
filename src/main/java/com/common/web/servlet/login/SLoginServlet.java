@@ -1,17 +1,16 @@
 package com.common.web.servlet.login;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import com.common.entity.user.interf.GenericUser;
+import com.common.service.impl.IUserService;
+import com.common.util.LoginUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import com.common.entity.user.interf.GenericUser;
-import com.common.service.impl.IUserService;
-import com.common.util.LoginUtil;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 /***
  * login servlet must extends this super class
@@ -42,6 +41,7 @@ public abstract class SLoginServlet<T extends GenericUser> extends HttpServlet {
 			//若登录成功，则把用户存放到session中
 			HttpSession session = request.getSession();
 			session.setAttribute(LoginUtil.SESSION_KEY_USER, result[0]);
+			System.out.println("session add key:"+LoginUtil.SESSION_KEY_USER);
 		}
 		return result_check;
 	}

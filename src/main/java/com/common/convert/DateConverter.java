@@ -1,16 +1,15 @@
 package com.common.convert;
 
+import com.string.widget.util.ValueWidget;
+import ognl.DefaultTypeConverter;
+import org.apache.commons.lang3.time.DateUtils;
+import org.apache.log4j.Logger;
+
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Map;
-
-import ognl.DefaultTypeConverter;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.apache.log4j.Logger;
 /***
  * 日期转换器.<br>用于struts2
  * 
@@ -72,8 +71,7 @@ public class DateConverter extends DefaultTypeConverter {
 //				result=new java.sql.Timestamp(result.getTime());
 //			}
 			// all patterns failed, try a milliseconds constructor
-			if (result == null && StringUtils.isNotEmpty((String) value)) {
-
+			if (result == null && !ValueWidget.isNullOrEmpty(value)) {
 				try {
 					result = new Date(new Long((String) value).longValue());
 				} catch (Exception e) {

@@ -1,15 +1,14 @@
 package com.common.service.impl;
 
-import java.io.UnsupportedEncodingException;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.common.dao.interf.IUserLoginDao;
 import com.common.entity.user.interf.GenericUser;
 import com.common.util.LoginUtil;
 import com.common.util.SystemHWUtil;
 import com.opensymphony.xwork2.ActionContext;
 import com.string.widget.util.ValueWidget;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.UnsupportedEncodingException;
 
 /***
  * super class for User Service class.
@@ -19,8 +18,8 @@ import com.string.widget.util.ValueWidget;
  */
 public abstract class SUserService<T extends GenericUser> implements
 		IUserService<T> {
-	private IUserLoginDao<T> userDao;
 	protected final Class<T> clz = SystemHWUtil.getGenricClassType(getClass());
+	private IUserLoginDao<T> userDao;
 
 	/***
 	 * construction method.
@@ -54,7 +53,7 @@ public abstract class SUserService<T extends GenericUser> implements
 		user = this.userDao.getByName(aUser);
 
 		if (user == null) {
-			System.out.println("can NOT find user username is "+aUser);
+			System.out.println("can NOT find user username is "+username);
 			results[0] = LoginUtil.LOGIN_RESULT_USER_NOT_EXIST;
 			return results;
 		} else {

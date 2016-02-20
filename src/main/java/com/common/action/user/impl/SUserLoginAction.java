@@ -1,8 +1,5 @@
 package com.common.action.user.impl;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Map;
-
 import com.common.entity.user.interf.GenericUser;
 import com.common.service.impl.IUserService;
 import com.common.util.LoginUtil;
@@ -10,8 +7,12 @@ import com.common.util.SystemHWUtil;
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Map;
+
 /***
- * user login action must extends this super Class
+ * user login action must extends this super Class<br>
+ * 用于Struts2
  * 
  * @author huangwei
  * 
@@ -21,14 +22,14 @@ public abstract class SUserLoginAction<T extends GenericUser> extends
 		ActionSupport {
 	private static final long serialVersionUID = -7922520899726205294L;
 	/***
+	 * 子类的类型
+	 */
+	protected final Class<T> clz = SystemHWUtil.getGenricClassType(getClass());
+	/***
 	 * Using Generics type
 	 */
 	protected T user;
 	private IUserService<T> userService;
-	/***
-	 * 子类的类型
-	 */
-	protected final Class<T> clz = SystemHWUtil.getGenricClassType(getClass());
 
 	@Override
 	public String execute() throws Exception {
@@ -36,6 +37,7 @@ public abstract class SUserLoginAction<T extends GenericUser> extends
 		return doExecute(checkUser(actionContext, this.user));
 	}
 	public String logout(){
+		System.out.println("SUserLoginAction logout");
 		return "login";
 	}
 
@@ -57,6 +59,7 @@ public abstract class SUserLoginAction<T extends GenericUser> extends
 			Map<String, Object> session = ActionContext.getContext()
 					.getSession();
 			session.put(LoginUtil.SESSION_KEY_USER, result[1]/*从数据库中查出来的用户对象*/);
+			System.out.println("session add key:"+LoginUtil.SESSION_KEY_USER);
 		}
 		return result_check;
 	}

@@ -91,7 +91,10 @@ public abstract class GenericDao<T> extends UniversalDao {
 	public void updateSpecail(int id,String propertyName,String value,String propertyName2,String value2){
 		updateSpecail(clz, id, propertyName, value, propertyName2, value2);
 	}
-	
+
+	public void updateSpecail(int id, String propertyName, String value, String propertyName2, int value2) {
+		updateSpecail(clz, id, propertyName, value, propertyName2, value2);
+	}
 	public int deleteByIdSimplely(int id) {
 		return deleteByIdSimplely(clz, id);
 	}

@@ -645,7 +645,23 @@ public class UniversalDao {
 		.executeUpdate();
 	}
 	/***
-     * 通过数据库ID查询一条记录,但是只返回指定的字段<br>
+	 * 同时更新两个字段
+	 * @param id
+	 * @param propertyName
+	 * @param value
+	 * @param propertyName2
+	 * @param value2
+	 */
+	public void updateSpecail(Class clz, int id, String propertyName, String value, String propertyName2, int value2) {
+		this.getCurrentSession().createQuery("update " + clz.getSimpleName() + " p set p." + propertyName + "=:column2322,p." + propertyName2 + "=:column2333 where p.id=:id")
+				.setString("column2322", value)
+				.setInteger("column2333", value2)
+				.setInteger("id", id)
+				.executeUpdate();
+	}
+
+	/***
+	 * 通过数据库ID查询一条记录,但是只返回指定的字段<br>
      * 注意权限的校验,只有授予权限才能调用该方法,即一定要验权
      * @param id
      * @param propertyNames : 指定的多个成员变量

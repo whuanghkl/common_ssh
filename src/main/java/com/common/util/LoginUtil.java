@@ -1,12 +1,12 @@
 package com.common.util;
 
+import com.common.entity.user.interf.GenericUser;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.common.entity.user.interf.GenericUser;
 
 /***
  * 
@@ -14,13 +14,6 @@ import com.common.entity.user.interf.GenericUser;
  * 
  */
 public final class LoginUtil {
-	/**
-	 * Do not allow the instantiation.
-	 */
-	private LoginUtil() {
-
-	}
-
 	public static final int LOGIN_RESULT_USER_NOT_EXIST = 1;
 	public static final int LOGIN_RESULT_PASSWORD_INVALID = 2;
 	public static final int LOGIN_RESULT_USERNAME_NULL = 3;
@@ -34,14 +27,25 @@ public final class LoginUtil {
 	public static final String SESSION_KEY_INVOCATION = "invocation";
 	public static final String SESSION_KEY_ACTION_NAME = "action_name";
 	public static final String SESSION_KEY_ACTION_NAMESPACE = "action_namespace";
+	/***
+	 * 登录成功之后的回调地址
+	 */
+	public static final String SESSION_KEY_LOGIN_RETURN_URL="return_url_after_login";
 	public static final int MAX_LOGIN_FAIL_TIMES = 3;
 	public static final int MILLISECONDS_WAIT_WHEN_FAIL = 30000;
 	public static final String KEYDES = "jingning!@#$%";
 	public static final String RESULT_LOGIN_FAILED="login2";
 	public static final Map<Integer, String> ERROR_MAP;
 	public static final String APPLICATION_KEY_IS_NEED_LOGIN="isneedlogin";
+
 	static {
 		ERROR_MAP = getErrorMap();
+	}
+	/**
+	 * Do not allow the instantiation.
+	 */
+	private LoginUtil() {
+
 	}
 
 	/***

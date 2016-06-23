@@ -142,7 +142,22 @@ public abstract class GenericDao<T> extends UniversalDao {
 				.add(Restrictions.eq(propertyName2, propertyValue2))
 				.uniqueResult();
 	}
-	public T get(Map condition){
+
+    /***
+     * @param propertyName
+     * @param propertyValue
+     * @param propertyName2
+     * @param propertyValue2Arr : in (1,2,3)
+     * @return
+     */
+    public List getList(String propertyName, Object propertyValue, String propertyName2, Object[] propertyValue2Arr) {
+        Criteria criteria = this.getCurrentSession().createCriteria(clz)
+                .add(Restrictions.eq(propertyName, propertyValue));
+        criteria.add(Restrictions.in(propertyName2, propertyValue2Arr));
+        return criteria.list();
+    }
+
+    public T get(Map condition){
 		Criteria criteria = this.sessionFactory.getCurrentSession()
 				.createCriteria(clz);
 		criteria =condition(criteria, condition);

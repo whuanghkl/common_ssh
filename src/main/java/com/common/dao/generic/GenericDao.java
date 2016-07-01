@@ -476,16 +476,27 @@ public abstract class GenericDao<T> extends UniversalDao {
 	}
 
 	/***
-	 *
-	 * @param maxRecordsNum
+     * @param conditonObj : 可以是map ,也可以是实体类
+     * @param maxRecordsNum
 	 * @param notNullColumn
 	 * @param orderColumnModeMap
      * @return
      */
-	public List<T> getFrontList(int maxRecordsNum,String notNullColumn,ListOrderedMap orderColumnModeMap){
-		return find(null,false,0,maxRecordsNum,notNullColumn,orderColumnModeMap);
-	}
-	/***
+    public List<T> getFrontList(Object conditonObj, int maxRecordsNum, String notNullColumn, ListOrderedMap orderColumnModeMap) {
+        return find(conditonObj, false, 0, maxRecordsNum, notNullColumn, orderColumnModeMap);
+    }
+
+    /***
+     * @param maxRecordsNum
+     * @param notNullColumn
+     * @param orderColumnModeMap
+     * @return
+     */
+    public List<T> getFrontList(int maxRecordsNum, String notNullColumn, ListOrderedMap orderColumnModeMap) {
+        return getFrontList(null, maxRecordsNum, notNullColumn, orderColumnModeMap);
+    }
+
+    /***
 	 * 
 	 * @param conditonObj : Map or entity object
 	 * @param includeZeros : Whether to include query criteria which field is 0.

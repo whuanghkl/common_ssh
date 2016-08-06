@@ -792,8 +792,8 @@ public class UniversalDao {
 		return count;
 	}
 	/***
-	 * 模糊查询,搜索新闻
-	 * @param condition
+     * 模糊查询,搜索新闻 ,search
+     * @param condition
 	 * @param columns
 	 * @param keyword
 	 * @param list

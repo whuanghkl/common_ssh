@@ -536,8 +536,27 @@ public abstract class GenericDao<T> extends UniversalDao {
 			int maxRecordsNum,ListOrderedMap orderColumnModeMap){
 		return listByPage(clz, condition, columns, keyword, list, first, maxRecordsNum,orderColumnModeMap);
 	}
-	
-	protected Criteria getCriteria(Map condition,String[]columns,String keyword){
+
+    /*** select
+     count(*) as y0_
+     from
+     t_test_to_boy this_
+     where
+     this_.status=?
+     and (
+     (
+     this_.testcase like ?
+     or this_.alias like ?
+     )
+     or this_.alias2 like ?
+     )<br >
+     * search
+     * @param condition
+     * @param columns
+     * @param keyword
+     * @return
+     */
+    protected Criteria getCriteria(Map condition,String[]columns,String keyword){
 		return getCriteria(clz, condition, columns, keyword);
 	}
 	

@@ -102,8 +102,8 @@ java.sql.SQLException: ResultSet may only be accessed in a forward direction.*/
 	 * @param view : 保存分页信息
 	 * @param dao  : 控制器中具体的dao
 	 */
-	public static void paging(Map condition,String[]columns,String keyword,PageView view, GenericDao dao,String orderMode,String orderColumn,String orderMode2,String orderColumn2) {
-		List list = new ArrayList();
+    public static void paging(Map condition, String[] columns, String keyword, PageView view, GenericDao dao, String orderMode, String orderColumn, String orderMode2, String orderColumn2, boolean isAccurate) {
+        List list = new ArrayList();
 		int currentPage2=view.getCurrentPage();
 		if(currentPage2<1){
 			currentPage2=1;
@@ -118,8 +118,8 @@ java.sql.SQLException: ResultSet may only be accessed in a forward direction.*/
 		System.out.println("start:" + start + ",\tmax:"
 				+ view.getRecordsPerPage());
 		long count = dao
-				.listByPage(condition,columns, keyword, list,start,view.getRecordsPerPage(),orderMode,orderColumn,orderMode2,orderColumn2);
-		view.setRecordList(list);
+                .listByPage(condition, columns, keyword, list, start, view.getRecordsPerPage(), orderMode, orderColumn, orderMode2, orderColumn2, isAccurate);
+        view.setRecordList(list);
 		paging(count, view);
 	}
 
@@ -128,8 +128,8 @@ java.sql.SQLException: ResultSet may only be accessed in a forward direction.*/
 	 * @param view : 保存分页信息
 	 * @param dao  : 控制器中具体的dao
 	 */
-	public static void paging(Map condition,String[]columns,String keyword,PageView view, GenericDao dao,ListOrderedMap orderColumnModeMap) {
-		List list = new ArrayList();
+    public static void paging(Map condition, String[] columns, String keyword, PageView view, GenericDao dao, ListOrderedMap orderColumnModeMap, boolean isAccurate) {
+        List list = new ArrayList();
 		int currentPage2=view.getCurrentPage();
 		if(currentPage2<1){
 			currentPage2=1;
@@ -144,8 +144,8 @@ java.sql.SQLException: ResultSet may only be accessed in a forward direction.*/
 		System.out.println("start:" + start + ",\tmax:"
 				+ view.getRecordsPerPage());
 		long count = dao
-				.listByPage(condition,columns, keyword, list,start,view.getRecordsPerPage(),orderColumnModeMap);
-		view.setRecordList(list);
+                .listByPage(condition, columns, keyword, list, start, view.getRecordsPerPage(), orderColumnModeMap, isAccurate);
+        view.setRecordList(list);
 		paging(count, view);
 	}
 	
@@ -166,8 +166,8 @@ java.sql.SQLException: ResultSet may only be accessed in a forward direction.*/
 	}
 	/***
 	 * @param conditionObj : <br />Whether to include query criteria which field is 0. <br />true:add[where xxx=0];<br /> false:no [where xxx=0]
-	 * @param criteria
-	 * @param view
+     * @param isLike
+     * @param view
 	 * @param dao
 	 * @param orderModel : 取值必须是['asc','desc']
 	 * @param orderColumn : 对哪个列进行排序

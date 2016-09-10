@@ -528,14 +528,14 @@ public abstract class GenericDao<T> extends UniversalDao {
 
 
 
-	public long listByPage(Map condition,String[]columns,String keyword,List list, int first,
-			int maxRecordsNum,String orderMode,String orderColumn,String orderMode2,String orderColumn2){
-		return listByPage(clz, condition, columns, keyword, list, first, maxRecordsNum, orderMode, orderColumn2, orderMode2, orderColumn2);
-	}
-	public long listByPage(Map condition,String[]columns,String keyword,List list, int first,
-			int maxRecordsNum,ListOrderedMap orderColumnModeMap){
-		return listByPage(clz, condition, columns, keyword, list, first, maxRecordsNum,orderColumnModeMap);
-	}
+	public long listByPage(Map condition, String[]columns, String keyword, List list, int first,
+                           int maxRecordsNum, String orderMode, String orderColumn, String orderMode2, String orderColumn2, boolean isAccurate) {
+        return listByPage(clz, condition, columns, keyword, list, first, maxRecordsNum, orderMode, orderColumn2, orderMode2, orderColumn2, isAccurate);
+    }
+	public long listByPage(Map condition, String[]columns, String keyword, List list, int first,
+                           int maxRecordsNum, ListOrderedMap orderColumnModeMap, boolean isAccurate) {
+        return listByPage(clz, condition, columns, keyword, list, first, maxRecordsNum, orderColumnModeMap, isAccurate);
+    }
 
     /*** select
      count(*) as y0_
@@ -557,8 +557,8 @@ public abstract class GenericDao<T> extends UniversalDao {
      * @return
      */
     protected Criteria getCriteria(Map condition,String[]columns,String keyword){
-		return getCriteria(clz, condition, columns, keyword);
-	}
+        return getCriteria(clz, condition, columns, keyword, false);
+    }
 	
 	/***
 	 * 

@@ -215,17 +215,26 @@ public class UniversalDao {
 	 * @param keyword
 	 * @return
 	 */
-	protected Criteria getCriteria(Class clz,Map condition,String[]columns,String keyword){
-		Criteria criteria =this.getCurrentSession().createCriteria(clz);
+    protected Criteria getCriteria(Class clz, Map condition, String[] columns, String keyword, boolean isAccurate) {
+        Criteria criteria =this.getCurrentSession().createCriteria(clz);
 		condition(criteria,condition);
 		if(!ValueWidget.isNullOrEmpty(keyword)){
-			Criterion c=Restrictions.like(columns[0], keyword, MatchMode.ANYWHERE);
-			if(columns.length==1){
+            Criterion c;
+            if (isAccurate) {
+                c = Restrictions.eq(columns[0], keyword);
+            } else {
+                c = Restrictions.like(columns[0], keyword, MatchMode.ANYWHERE);
+            }
+            if(columns.length==1){
 				criteria.add(c);
 			}else{
 				for(int i=1;i<columns.length;i++){
-					c=Restrictions.or(c,Restrictions.like(columns[i], keyword, MatchMode.ANYWHERE));
-				}
+                    if (isAccurate) {
+                        c = Restrictions.or(c, Restrictions.eq(columns[i], keyword));
+                    } else {
+                        c = Restrictions.or(c, Restrictions.like(columns[i], keyword, MatchMode.ANYWHERE));
+                    }
+                }
 				criteria.add(c);
 			}
 		}
@@ -776,15 +785,15 @@ public class UniversalDao {
 	 * @param maxRecordsNum
 	 * @return
 	 */
-	public long listByPage(Class clz,Map condition,String[]columns,String keyword,List list, int first,
-			int maxRecordsNum,String orderMode,String orderColumn,String orderMode2,String orderColumn2){
-		Criteria criteria =getCriteria(clz,condition, columns, keyword);
-		long count=count(criteria);
+	public long listByPage(Class clz, Map condition, String[]columns, String keyword, List list, int first,
+                           int maxRecordsNum, String orderMode, String orderColumn, String orderMode2, String orderColumn2, boolean isAccurate) {
+        Criteria criteria = getCriteria(clz, condition, columns, keyword, isAccurate);
+        long count=count(criteria);
 		if(count<1){
 			return count;
 		}
-		Criteria criteria2=getCriteria(clz,condition, columns, keyword);
-		orderBy(orderColumn, orderMode, criteria2);
+        Criteria criteria2 = getCriteria(clz, condition, columns, keyword, isAccurate);
+        orderBy(orderColumn, orderMode, criteria2);
 		orderBy(orderColumn2, orderMode2, criteria2);
 		paging(criteria2, first, maxRecordsNum);
 		
@@ -801,14 +810,14 @@ public class UniversalDao {
 	 * @param maxRecordsNum
 	 * @return
 	 */
-	public long listByPage(Class clz,Map condition,String[]columns,String keyword,List list, int first,
-			int maxRecordsNum,ListOrderedMap orderColumnModeMap){
-		Criteria criteria =getCriteria(clz,condition, columns, keyword);
-		long count=count(criteria);
+	public long listByPage(Class clz, Map condition, String[]columns, String keyword, List list, int first,
+                           int maxRecordsNum, ListOrderedMap orderColumnModeMap, boolean isAccurate) {
+        Criteria criteria = getCriteria(clz, condition, columns, keyword, isAccurate);
+        long count=count(criteria);
 		if(count<1){
 			return count;
 		}
-		Criteria criteria2 = getCriteria(clz, condition, columns, keyword);
+        Criteria criteria2 = getCriteria(clz, condition, columns, keyword, isAccurate);
 
 		orderBy(orderColumnModeMap, criteria2);
 //		orderBy(orderColumn2, orderMode2, criteria2);

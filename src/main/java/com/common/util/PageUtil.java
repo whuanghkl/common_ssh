@@ -96,12 +96,16 @@ java.sql.SQLException: ResultSet may only be accessed in a forward direction.*/
 			view.setRecordList(list);
 			paging(count, view);
 		}
-	
-	/***
-	 * 页码从1开始<br>搜索新闻
-	 * @param view : 保存分页信息
-	 * @param dao  : 控制器中具体的dao
-	 */
+
+    public static void paging(Map condition, String[] columns, String keyword, PageView view, GenericDao dao, String orderMode, String orderColumn, String orderMode2, String orderColumn2) {
+        paging(condition, columns, keyword, view, dao, orderMode, orderColumn, orderMode2, orderColumn2, false);
+    }
+
+    /***
+     * 页码从1开始<br>搜索新闻
+     * @param view : 保存分页信息
+     * @param dao  : 控制器中具体的dao
+     */
     public static void paging(Map condition, String[] columns, String keyword, PageView view, GenericDao dao, String orderMode, String orderColumn, String orderMode2, String orderColumn2, boolean isAccurate) {
         List list = new ArrayList();
 		int currentPage2=view.getCurrentPage();
@@ -123,11 +127,15 @@ java.sql.SQLException: ResultSet may only be accessed in a forward direction.*/
 		paging(count, view);
 	}
 
-	/***
-	 * 页码从1开始<br>搜索新闻
-	 * @param view : 保存分页信息
-	 * @param dao  : 控制器中具体的dao
-	 */
+    public static void paging(Map condition, String[] columns, String keyword, PageView view, GenericDao dao, ListOrderedMap orderColumnModeMap) {
+        paging(condition, columns, keyword, view, dao, orderColumnModeMap, false);
+    }
+
+    /***
+     * 页码从1开始<br>搜索新闻
+     * @param view : 保存分页信息
+     * @param dao  : 控制器中具体的dao
+     */
     public static void paging(Map condition, String[] columns, String keyword, PageView view, GenericDao dao, ListOrderedMap orderColumnModeMap, boolean isAccurate) {
         List list = new ArrayList();
 		int currentPage2=view.getCurrentPage();

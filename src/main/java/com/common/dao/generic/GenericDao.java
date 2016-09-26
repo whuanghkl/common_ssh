@@ -8,6 +8,7 @@ import org.apache.commons.collections.map.ListOrderedMap;
 import org.apache.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 
 import java.lang.reflect.Field;
@@ -258,12 +259,22 @@ public abstract class GenericDao<T> extends UniversalDao {
 		return (List<T>)getCurrentSession().createCriteria(clz).add(Restrictions.ne(exceptProperty, propertyValue)).list();
 	}
 	public List<T> getList(String property,Object propertyValue){
-		Criteria criteria =getCurrentSession().createCriteria(clz);
+        return getList(property, propertyValue, true);
+    }
+
+    public List<T> getList(String property, Object propertyValue, boolean isLike) {
+        Criteria criteria =getCurrentSession().createCriteria(clz);
 		if(ValueWidget.isNullOrEmpty(property)){
 			return (List<T>)criteria.list();
 		}
-		return (List<T>)criteria.add(Restrictions.eq(property, propertyValue)).list();
-	}
+        Criterion criterion = null;
+        if (isLike) {
+            criterion = Restrictions.like(property, "%" + propertyValue + "%");
+        } else {
+            criterion = Restrictions.eq(property, propertyValue);
+        }
+        return (List<T>) criteria.add(criterion).list();
+    }
 	
 	/***
 	 * 

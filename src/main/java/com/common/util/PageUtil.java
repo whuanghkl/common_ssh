@@ -193,19 +193,16 @@ java.sql.SQLException: ResultSet may only be accessed in a forward direction.*/
 	}
 
 	public static void convertEmpty2Null(Object conditionObj) {
-		if(!ValueWidget.isNullOrEmpty(conditionObj)){
-			try {
+        if (ValueWidget.isNullOrEmpty(conditionObj)) {
+            return;
+        }
+        try {
 				//把对象中空字符串改为null
 				ReflectHWUtils.convertEmpty2Null(conditionObj);
 			} catch (SecurityException e) {
 				e.printStackTrace();
-			} catch (NoSuchFieldException e) {
-				e.printStackTrace();
 			} catch (IllegalArgumentException e) {
 				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 
@@ -223,9 +220,16 @@ java.sql.SQLException: ResultSet may only be accessed in a forward direction.*/
 		int start = (view.getCurrentPage() - 1)
 				* view.getRecordsPerPage();
 		convertEmpty2Null(conditionObj);
-		long count = dao
-				.listByPage(conditionObj,false/*includeZeros*/,isLike	, list, start, view.getRecordsPerPage(),false/* isDistinctRoot */,notNullColumn,orderColumnModeMap);
-		view.setRecordList(list);
+        long count = -1;
+        try {
+            count = dao
+                    .listByPage(conditionObj, false/*includeZeros*/, isLike, list, start, view.getRecordsPerPage(), false/* isDistinctRoot */, notNullColumn, orderColumnModeMap);
+        } catch (Exception e) {
+            e.printStackTrace();
+            count = dao
+                    .listByPage(conditionObj,false/*includeZeros*/,isLike	, list, start, view.getRecordsPerPage(),false/* isDistinctRoot */,notNullColumn,orderColumnModeMap);
+        }
+        view.setRecordList(list);
 		view.setRecordNumOfCurrent(list.size());
 		paging(count, view);
 	}

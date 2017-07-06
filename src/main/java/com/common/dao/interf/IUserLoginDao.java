@@ -1,9 +1,9 @@
 package com.common.dao.interf;
 
+import com.common.entity.user.interf.GenericUser;
+
 import java.io.Serializable;
 import java.util.List;
-
-import com.common.entity.user.interf.GenericUser;
 
 /***
  * user log in
@@ -15,7 +15,13 @@ public interface IUserLoginDao<T extends GenericUser> {
 
 	public abstract T getByName(T user) throws Exception;
 
-	public abstract T getByName(String username) throws Exception;
+    public abstract T getByName(String username);
+
+    public void updateSpecial(int id, String propertyName, String value);
+
+    public int modifyPass(int userId, String old_password, String new_password);
+
+    public int modifyPass(int userId, String new_password);
 
 	public abstract T getByNameAndPassword(T user2)
 			throws Exception;

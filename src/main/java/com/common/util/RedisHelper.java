@@ -1,12 +1,12 @@
 package com.common.util;
 
-import java.util.Map;
-
+import com.common.dict.Const;
+import com.string.widget.util.ValueWidget;
 import org.apache.log4j.Logger;
-
 import redis.clients.jedis.Jedis;
 
-import com.common.dict.Const;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by David on 15/4/1.
@@ -25,8 +25,19 @@ public class RedisHelper {
     }
 
     public void saveCache(String k, String v) {
-
-        Jedis jedis = Const.pool.getResource();
+        if (ValueWidget.isNullOrEmpty(v)) {
+            return;
+        }
+        if (null == Const.pool) {
+            return;
+        }
+        Jedis jedis = null;
+        try {
+            jedis = Const.pool.getResource();
+        } catch (redis.clients.jedis.exceptions.JedisConnectionException e) {
+            e.printStackTrace();
+            return;
+        }
 
         try{
             jedis.set(k, v);
@@ -62,7 +73,19 @@ public class RedisHelper {
      * @param time : second
      */
     public void saveExpxKeyCache(String k, String v, String nxxx, long time) {
-        Jedis jedis = Const.pool.getResource();
+        if (null == Const.pool) {
+            return;
+        }
+        if (null == v) {
+            return;
+        }
+        Jedis jedis = null;
+        try {
+            jedis = Const.pool.getResource();
+        } catch (redis.clients.jedis.exceptions.JedisConnectionException e) {
+            e.printStackTrace();
+            return;
+        }
         try {
             jedis.set(k, v, nxxx, "EX"/*seconds*/, time);
         } catch (Exception e) {
@@ -77,8 +100,19 @@ public class RedisHelper {
         }
     }
     public void saveKeyCache(String id, String k, String v) {
-
-        Jedis jedis = Const.pool.getResource();
+        if (ValueWidget.isNullOrEmpty(v)) {
+            return;
+        }
+        if (null == Const.pool) {
+            return;
+        }
+        Jedis jedis = null;
+        try {
+            jedis = Const.pool.getResource();
+        } catch (redis.clients.jedis.exceptions.JedisConnectionException e) {
+            e.printStackTrace();
+            return;
+        }
 
         try{
             jedis.hset(id, k, v);
@@ -94,9 +128,67 @@ public class RedisHelper {
         }
     }
 
-    public void saveAllKeyCache(String id, Map kv) {
+    public void saveKeyCacheAndExpire(String id, String k, String v) {
+        saveKeyCacheAndExpire(id, k, v, 24 * 15);
+    }
 
-        Jedis jedis = Const.pool.getResource();
+    public void saveKeyCacheAndExpire(String id, String k, String v, int hours) {
+        if (ValueWidget.isNullOrEmpty(v)) {
+            return;
+        }
+        if (null == Const.pool) {
+            return;
+        }
+        Jedis jedis = null;
+        try {
+            jedis = Const.pool.getResource();
+        } catch (redis.clients.jedis.exceptions.JedisConnectionException e) {
+            e.printStackTrace();
+            return;
+        }
+        try {
+            jedis.hset(id, k, v);
+            jedis.expire(id, 60 * 60 * hours);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("saveKeyCache", e);
+            Const.pool.returnBrokenResource(jedis);
+            jedis = null;
+        } finally {
+            if (jedis != null) {
+                Const.pool.returnResource(jedis);
+            }
+        }
+    }
+
+    public void setExpire(String id, int hours) {
+        if (null == Const.pool) {
+            return;
+        }
+        Jedis jedis = null;
+        try {
+            jedis = Const.pool.getResource();
+        } catch (redis.clients.jedis.exceptions.JedisConnectionException e) {
+            e.printStackTrace();
+            return;
+        }
+        jedis.expire(id, 60 * 60 * hours);
+    }
+    public void saveAllKeyCache(String id, Map kv) {
+        if (ValueWidget.isNullOrEmpty(id) || ValueWidget.isNullOrEmpty(kv)) {
+            return;
+        }
+        if (null == Const.pool) {
+            return;
+        }
+        Jedis jedis = null;
+        try {
+            jedis = Const.pool.getResource();
+        } catch (redis.clients.jedis.exceptions.JedisConnectionException e) {
+            e.printStackTrace();
+            return;
+        }
 
         try{
             jedis.hmset(id, kv);
@@ -114,8 +206,16 @@ public class RedisHelper {
     }
 
     public void clearKeyCache(String id, String k) {
-
-        Jedis jedis = Const.pool.getResource();
+        if (null == Const.pool) {
+            return;
+        }
+        Jedis jedis = null;
+        try {
+            jedis = Const.pool.getResource();
+        } catch (redis.clients.jedis.exceptions.JedisConnectionException e) {
+            e.printStackTrace();
+            return;
+        }
 
         try{
             jedis.hdel(id, k);
@@ -133,8 +233,16 @@ public class RedisHelper {
     }
 
     public String getCache(String k) {
-
-        Jedis jedis = Const.pool.getResource();
+        if (null == Const.pool) {
+            return null;
+        }
+        Jedis jedis = null;
+        try {
+            jedis = Const.pool.getResource();
+        } catch (redis.clients.jedis.exceptions.JedisConnectionException e) {
+            e.printStackTrace();
+            return null;
+        }
         String v = "";
 
         try{
@@ -155,8 +263,16 @@ public class RedisHelper {
     }
 
     public String getKeyCache(String id,  String k) {
-
-        Jedis jedis = Const.pool.getResource();
+        if (null == Const.pool) {
+            return null;
+        }
+        Jedis jedis = null;
+        try {
+            jedis = Const.pool.getResource();
+        } catch (redis.clients.jedis.exceptions.JedisConnectionException e) {
+            e.printStackTrace();
+            return null;
+        }
         String v = "";
 
         try{
@@ -176,8 +292,16 @@ public class RedisHelper {
     }
 
     public Map getAllKeyCache(String id) {
-
-        Jedis jedis = Const.pool.getResource();
+        if (null == Const.pool) {
+            return new HashMap();
+        }
+        Jedis jedis = null;
+        try {
+            jedis = Const.pool.getResource();
+        } catch (redis.clients.jedis.exceptions.JedisConnectionException e) {
+            e.printStackTrace();
+            return null;
+        }
         Map v = null;
 
         try{
@@ -197,8 +321,16 @@ public class RedisHelper {
     }
 
     public void clearCache(String id) {
-
-        Jedis jedis = Const.pool.getResource();
+        if (null == Const.pool) {
+            return;
+        }
+        Jedis jedis = null;
+        try {
+            jedis = Const.pool.getResource();
+        } catch (redis.clients.jedis.exceptions.JedisConnectionException e) {
+            e.printStackTrace();
+            return;
+        }
 
         try{
             jedis.del(id);

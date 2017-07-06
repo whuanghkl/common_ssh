@@ -1,6 +1,7 @@
 package com.common.dao.generic;
 
 import com.common.bean.OrderByBean;
+import com.common.dict.Constant2;
 import com.common.util.ReflectHWUtils;
 import com.common.util.SystemHWUtil;
 import com.string.widget.util.ValueWidget;
@@ -34,13 +35,21 @@ public abstract class GenericDao<T> extends UniversalDao {
 	/***************************************************************/
 
 	/***
-	 * 创建空对象
-	 *
-	 * @return
-	 */
-	public T createEmptyObj(){
-		return createEmptyObj(clz);
-	}
+     * 获取实体类
+     * @return
+     */
+    public Class<T> getEntityClass() {
+        return clz;
+    }
+
+    /***
+     * 创建空对象
+     *
+     * @return
+     */
+    public T createEmptyObj(){
+        return createEmptyObj(clz);
+    }
 	/***
 	 * 仅仅创建一个空对象而已,不涉及数据库操作
 	 * @return
@@ -53,17 +62,21 @@ public abstract class GenericDao<T> extends UniversalDao {
 			return  clz.newInstance();
 		} catch (InstantiationException e) {
 			e.printStackTrace();
-		} catch (IllegalAccessException e) {
+            logger.error("createEmptyObj error", e);
+        } catch (IllegalAccessException e) {
 			e.printStackTrace();
-		}
+            logger.error("createEmptyObj error", e);
+        }
 		return null;
 	}
 	public void deleteById(int id) {
+        if (softwareDelete(id, getClz())) return;
         this.getCurrentSession().delete(get(id));
         logger.debug("delete by id=\t" + id);
 	}
 
 	public void deleteById(long id) {
+        if (softwareDelete(id, getClz())) return;
         this.getCurrentSession().delete(get(id));
         logger.debug("delete by id=\t" + id);
 	}
@@ -177,13 +190,13 @@ public abstract class GenericDao<T> extends UniversalDao {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 */
-    public T getByBean(Object obj, String[] excludeProperties) throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    public T getByBean(Object obj, String[] excludeProperties) throws SecurityException {
         Criteria criteria=this.getCurrentSession().createCriteria(clz);
 		List<Field> fieldsList = ReflectHWUtils.getAllFieldList(obj.getClass());
 		for(int i=0;i<fieldsList.size();i++){
 			Field f=fieldsList.get(i);
-			if (f.getName().equals("id")) {//过滤掉id
-				continue;
+            if (f.getName().equals(Constant2.DB_ID)) {//过滤掉id
+                continue;
 			}
             //!ValueWidget.isNullOrEmpty(excludeProperty)&&f.getName().equals(excludeProperty)
             if (SystemHWUtil.isContains(excludeProperties, f.getName())) {
@@ -197,13 +210,13 @@ public abstract class GenericDao<T> extends UniversalDao {
 		return (T)criteria.uniqueResult();
 	}
 
-    public T getByBean(Object obj, String excludeProperty) throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    public T getByBean(Object obj, String excludeProperty) throws SecurityException {
         String[] excludeProperties = new String[]{excludeProperty};
         return getByBean(obj, excludeProperties);
     }
 
-	public T getByBean(Object obj) throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException{
-		return getByBean(obj,(String)null);
+    public T getByBean(Object obj) throws SecurityException {
+        return getByBean(obj,(String)null);
 	}
 	/***
 	 * 设置FetchMode.LAZY
@@ -215,8 +228,8 @@ public abstract class GenericDao<T> extends UniversalDao {
 	public T getLazy(int id, String propertyName) {
         return (T) this.getCurrentSession().createCriteria(clz)
                 .setFetchMode(propertyName, FetchMode.LAZY)
-				.add(Restrictions.eq("id", id)).uniqueResult();
-	}
+                .add(Restrictions.eq(Constant2.DB_ID, id)).uniqueResult();
+    }
 
 	/***
 	 * 

@@ -1,8 +1,11 @@
 package com.common.dao.generic;
 
 import com.common.bean.OrderByBean;
+import com.common.dao.annotation.SoftDelete;
+import com.common.dict.Constant2;
 import com.common.util.ReflectHWUtils;
 import com.common.util.SystemHWUtil;
+import com.string.widget.util.RegexUtil;
 import com.string.widget.util.ValueWidget;
 import org.apache.commons.collections.map.ListOrderedMap;
 import org.apache.log4j.Logger;
@@ -51,38 +54,80 @@ public class UniversalDao {
 
 	public Session getCurrentSession(){
 		Session session=this.sessionFactory.getCurrentSession();
-		if(ValueWidget.isNullOrEmpty(session)){
-			System.out.println("this.sessionFactory.getCurrentSession() return null!!!");
+        if (!ValueWidget.isNullOrEmpty(session)) {
+            enableFilter(session);
+            return session;
+        }
+        System.out.println("this.sessionFactory.getCurrentSession() return null!!!");
 			session=this.sessionFactory.openSession();
-			System.out.println("invoke this.sessionFactory.openSession()");
-		}
+        enableFilter(session);
+        System.out.println("invoke this.sessionFactory.openSession()");
 		return session;
 	}
 
 	/***
-	 *
-	 * @param obj
-	 *            :Must not be detached (other state is persistent,transient)
-	 */
-	public void delete(Object obj) {
-		if(ValueWidget.isNullOrEmpty(obj)){
-			logger.warn("delete BUT obj is null");
-			System.out.println("delete BUT obj is null");
-			return;
-		}
-		this.getCurrentSession().delete(obj);
-		try {
-			logger.debug("delete " + obj+".id:"+ReflectHWUtils.getObjectValue(obj, "id"));
-		} catch (SecurityException e) {
-			e.printStackTrace();
-		} catch (NoSuchFieldException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
-	}
+     * 用于hibernate 设置filter,<br />
+     * 子类可以覆写<br />
+     * see :http://techqa.info/programming/tag/hibernate-filters
+     * @param session
+     */
+    protected void enableFilter(Session session) {
+//        session.enabledFilter("effectiveDate").setParameter("asOfDate", new Date());
+    }
+
+    /***
+     *
+     * @param obj
+     *            :Must not be detached (other state is persistent,transient)
+     */
+    public void delete(Object obj) {
+        if(ValueWidget.isNullOrEmpty(obj)){
+            logger.warn("delete BUT obj is null");
+            System.out.println("delete BUT obj is null");
+            return;
+        }
+        //不是真正删除,而是修改字段softDeleteAnnotation.value() 的值
+        int id = ReflectHWUtils.getObjectIntValue(obj, Constant2.DB_ID);
+        Class<?> clazz = obj.getClass();
+        if (softwareDelete(id, clazz)) return;
+        this.getCurrentSession().delete(obj);
+        try {
+            logger.debug("delete " + obj + ".id:" + ReflectHWUtils.getObjectValue(obj, Constant2.DB_ID));
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected boolean softwareDelete(Number id, Class<?> clazz) {
+        //1. 获取实体类上的注解
+        SoftDelete softDeleteAnnotation = clazz.getAnnotation(SoftDelete.class);
+        //2. 判断列名是否为空
+        if (null != softDeleteAnnotation && !ValueWidget.isNullOrEmpty(softDeleteAnnotation.value())) {
+            String column = softDeleteAnnotation.value();
+            //3. 获取列的类型
+            Class columnTypeClazz = softDeleteAnnotation.columnType();
+            String columnTypeName = columnTypeClazz.getName();
+
+            //4. 只更新这一个列
+            if (columnTypeName.contains("int") || columnTypeName.contains("Integer")) {
+                updateSpecail(clazz, id, column, Integer.parseInt(softDeleteAnnotation.inValidValue()));
+            } else if (columnTypeName.contains("short") || columnTypeName.contains("Short")) {
+                updateSpecail(clazz, id, column, Short.parseShort(softDeleteAnnotation.inValidValue()));
+            } else if (columnTypeName.contains("long") || columnTypeName.contains("Long")) {
+                updateSpecail(clazz, id, column, Long.parseLong(softDeleteAnnotation.inValidValue()));
+            } else if (columnTypeName.contains("byte") || columnTypeName.contains("Byte")) {
+                updateSpecail(clazz, id, column, Byte.parseByte(softDeleteAnnotation.inValidValue()));
+            } else {
+                updateSpecail(clazz, id, column, softDeleteAnnotation.inValidValue());
+            }
+
+            return true;
+        }
+        return false;
+    }
+
 
 	protected Criteria orderBy(String orderedColumn,String orderByMode,Criteria criteria){
 		if(!ValueWidget.isNullOrEmpty(orderedColumn)
@@ -247,18 +292,22 @@ public class UniversalDao {
 	 * @return
 	 */
 	protected Criteria condition(Criteria criteria, Map condition) {
-		if (!ValueWidget.isNullOrEmpty(condition)) {
-			Iterator it = condition.entrySet().iterator();
+        if (ValueWidget.isNullOrEmpty(condition)) {
+            return criteria;
+        }
+        Iterator it = condition.entrySet().iterator();
 			logger.debug("start to set query condition:");
 			while (it.hasNext()) {
 				Map.Entry entry = (Map.Entry) it.next();
 				String key = (String) entry.getKey();
 				Object value = entry.getValue();
-				logger.debug("query condition---" + key + ":\t" + value);
+                if (null == value) {
+                    continue;
+                }
+                logger.debug("query condition---" + key + ":\t" + value);
 				criteria.add(Restrictions.eq(key, value));
 			}
 			logger.debug("set query condition over.");
-		}
 		return criteria;
 	}
 	/***
@@ -536,12 +585,34 @@ public class UniversalDao {
 	 * @param propertyName : 成员变量名称
 	 * @param value : 成员变量的值,即查询条件
 	 */
-	public void updateSpecail(Class clz,int id,String propertyName,String value){
-		this.getCurrentSession().createQuery("update "+clz.getSimpleName()+" p set p."+propertyName+"=:column2322 where p.id=:id")
-		.setString("column2322", value)
-		.setInteger("id", id)
-		.executeUpdate();
-	}
+    public void updateSpecail(Class clz, Number id, String propertyName, Object value) {
+        Query query = this.getCurrentSession().createQuery("update " + clz.getSimpleName() + " p set p." + propertyName + "=:column2322 where p.id=:id");
+        /*if(value instanceof String){
+            query.setString("column2322", (String) value);
+        }else if(value instanceof Byte){
+            query.setByte("column2322", (Byte) value);
+        }*/
+        setSQLParameter(query, "column2322", value);
+
+        setSQLParameter(query, Constant2.DB_ID, id);
+        query.executeUpdate();
+    }
+
+    protected void setSQLParameter(Query query, String columnName, Object value) {
+        if (value instanceof Integer) {
+            query.setInteger(columnName, (int) value);
+        } else if (value instanceof Long) {
+            query.setLong(columnName, (long) value);
+        } else if (value instanceof Short) {
+            query.setShort(columnName, (short) value);
+        } else if (value instanceof String) {
+            query.setString("column2322", (String) value);
+        } else if (value instanceof Byte) {
+            query.setByte("column2322", (Byte) value);
+        } else {
+            query.setCharacter(columnName, (char) value);
+        }
+    }
 
 	/***
 	 * 只更新一个字段
@@ -550,12 +621,12 @@ public class UniversalDao {
 	 * @param propertyName : 成员变量名称
 	 * @param value        : 成员变量的值,即查询条件
 	 */
-	public void updateSpecail(Class clz, int id, String propertyName, int value) {
-		this.getCurrentSession().createQuery("update " + clz.getSimpleName() + " p set p." + propertyName + "=:column2322 where p.id=:id")
+/*	public void updateSpecail(Class clz, int id, String propertyName, int value) {
+        this.getCurrentSession().createQuery("update " + clz.getSimpleName() + " p set p." + propertyName + "=:column2322 where p.id=:id")
 				.setInteger("column2322", value)
 				.setInteger("id", id)
 				.executeUpdate();
-	}
+	}*/
 
 	/***
 	 *
@@ -592,12 +663,12 @@ public class UniversalDao {
     	}
     	if(result instanceof String){
     		return (String)result;
-    	}else if(result instanceof Number){
-    		return String.valueOf(result);
-    	}else{
-    		return result.toString();
+        }
+        if (result instanceof Number) {
+            return String.valueOf(result);
+        }
+        return result.toString();
     	}
-    }
     /***
      * 根据id查询单个列
      * @param id
@@ -650,8 +721,8 @@ public class UniversalDao {
 		this.getCurrentSession().createQuery("update "+clz.getSimpleName()+" p set p."+propertyName+"=:column2322,p."+propertyName2+"=:column2333 where p.id=:id")
 		.setString("column2322", value)
 		.setString("column2333", value2)
-		.setInteger("id", id)
-		.executeUpdate();
+                .setInteger(Constant2.DB_ID, id)
+                .executeUpdate();
 	}
 	/***
 	 * 同时更新两个字段
@@ -665,11 +736,20 @@ public class UniversalDao {
 		this.getCurrentSession().createQuery("update " + clz.getSimpleName() + " p set p." + propertyName + "=:column2322,p." + propertyName2 + "=:column2333 where p.id=:id")
 				.setString("column2322", value)
 				.setInteger("column2333", value2)
-				.setInteger("id", id)
-				.executeUpdate();
+                .setInteger(Constant2.DB_ID, id)
+                .executeUpdate();
 	}
 
-	/***
+    public int executeSql(String sql) {
+        if (ValueWidget.isNullOrEmpty(sql)) {
+            return -1;
+        }
+        sql = RegexUtil.replaceAll2(sql, " delete", "");
+        sql = RegexUtil.replaceAll2(sql, " update", "");
+        return this.getCurrentSession().createSQLQuery(sql).executeUpdate();
+    }
+
+    /***
 	 * 通过数据库ID查询一条记录,但是只返回指定的字段<br>
      * 注意权限的校验,只有授予权限才能调用该方法,即一定要验权
      * @param id
@@ -828,19 +908,22 @@ public class UniversalDao {
 	}
 
 	protected void orderBy(ListOrderedMap orderColumnModeMap, Criteria criteria2) {
-		if (orderColumnModeMap != null) {
-			int orderLength = orderColumnModeMap.size();
+        if (null == orderColumnModeMap) {
+            return;
+        }
+        int orderLength = orderColumnModeMap.size();
 			for (int i = 0; i < orderLength; i++) {
 				String orderMode = (String) orderColumnModeMap.getValue(i);
 				String orderColumn = (String) orderColumnModeMap.get(i);
 				orderBy(orderColumn, orderMode, criteria2);
 			}
 		}
-	}
 
 	public void listIsNull(List list) {
-		if (list == null) {
-			Class clazz = this.getClass();// 因为是实例方法，所以可以用this
+        if (list != null) {
+            return;
+        }
+        Class clazz = this.getClass();// 因为是实例方法，所以可以用this
 			String className = clazz.getCanonicalName();/* com.jn.bean.Student */
 			Thread currentThread = Thread.currentThread();
 			StackTraceElement stackElement = currentThread.getStackTrace()[1];
@@ -850,5 +933,4 @@ public class UniversalDao {
 			throw new RuntimeException(className + "." + methodName
 					+ ": list must not be null");
 		}
-	}
 }

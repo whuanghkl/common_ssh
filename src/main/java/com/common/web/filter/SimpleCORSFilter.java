@@ -1,5 +1,7 @@
 package com.common.web.filter;
 
+import com.common.dict.Const;
+import com.common.dto.AllowOriginDto;
 import com.string.widget.util.ValueWidget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +18,7 @@ import java.io.IOException;
  */
 public class SimpleCORSFilter implements Filter {
     private static final Logger log = LoggerFactory.getLogger(SimpleCORSFilter.class);
-
+    private AllowOriginDto allowOriginDto;
     @Override
     public void destroy() {
     }
@@ -26,6 +28,10 @@ public class SimpleCORSFilter implements Filter {
                          FilterChain chain) throws IOException, ServletException {
         HttpServletResponse response = (HttpServletResponse) res;
         HttpServletRequest request = (HttpServletRequest) req;
+        if (request.getServletPath().endsWith("/cors/update/json")) {
+            chain.doFilter(req, res);
+            return;
+        }
         //优先级 request > header
         String allOrigin = request.getParameter("allowOrigin");
         String message = "############## allOrigin :" + allOrigin;
@@ -34,7 +40,7 @@ public class SimpleCORSFilter implements Filter {
         if (ValueWidget.isNullOrEmpty(allOrigin)) {
             allOrigin = request.getHeader("Origin");
             if (ValueWidget.isNullOrEmpty(allOrigin)) {
-                allOrigin = "*";
+                allOrigin = this.allowOriginDto.getAccessControlAllowOrigin();
             }
         }
         response.setHeader("Access-Control-Allow-Origin", allOrigin);
@@ -43,8 +49,10 @@ public class SimpleCORSFilter implements Filter {
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with");
 
         String allCookie = request.getParameter("allowCookie");
-        if (!ValueWidget.isNullOrEmpty(allCookie) && "true".equalsIgnoreCase(allCookie)) {//允许客户端带cookie
-            response.setHeader("Access-Control-Allow-Credentials", "true");
+        if ("true".equalsIgnoreCase(allCookie)) {//允许客户端带cookie
+            response.setHeader(Const.HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+        } else {
+            response.setHeader(Const.HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS, String.valueOf(this.allowOriginDto.getAccessControlAllowCredentials()));
         }
 
         chain.doFilter(req, res);
@@ -52,7 +60,10 @@ public class SimpleCORSFilter implements Filter {
     }
 
     @Override
-    public void init(FilterConfig arg0) throws ServletException {
+    public void init(FilterConfig filterConfig) throws ServletException {
+        System.out.println("SimpleCORSFilter init:");
+        this.allowOriginDto = new AllowOriginDto();
+        filterConfig.getServletContext().setAttribute(Const.ATTRIBUTE_ALLOW_ORIGIN_DTO, this.allowOriginDto);
     }
 
 }

@@ -2,7 +2,7 @@ package com.common.web.filter;
 
 import com.common.dict.Const;
 import com.common.dto.AllowOriginDto;
-import com.string.widget.util.ValueWidget;
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,16 +33,16 @@ public class SimpleCORSFilter implements Filter {
             return;
         }
         //优先级 request > header
-        String allOrigin = request.getParameter("allowOrigin");
+        String allOrigin = ObjectUtils.firstNonNull(request.getParameter("allowOrigin"), request.getHeader("Origin"), this.allowOriginDto.getAccessControlAllowOrigin());
         String message = "############## allOrigin :" + allOrigin;
         log.warn(message);
         System.out.println(message);
-        if (ValueWidget.isNullOrEmpty(allOrigin)) {
-            allOrigin = request.getHeader("Origin");
+        /*if (ValueWidget.isNullOrEmpty(allOrigin)) {
+            allOrigin = ;
             if (ValueWidget.isNullOrEmpty(allOrigin)) {
                 allOrigin = this.allowOriginDto.getAccessControlAllowOrigin();
             }
-        }
+        }*/
         response.setHeader("Access-Control-Allow-Origin", allOrigin);
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE,PUT");
         response.setHeader("Access-Control-Max-Age", "3600");

@@ -33,7 +33,6 @@ public class Const {
     }
 
     public static void initRedisConnect() {
-
         String sentinelIp = "59.110.236.186:26379";//"123.57.78.161:26379"
         String password = "re1230314acc";
         System.out.println("重新连接 :" + sentinelIp);

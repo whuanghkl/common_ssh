@@ -2,6 +2,7 @@ package com.common.web.filter;
 
 import com.common.dict.Const;
 import com.common.dto.AllowOriginDto;
+import com.string.widget.util.ValueWidget;
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,11 @@ public class SimpleCORSFilter implements Filter {
                          FilterChain chain) throws IOException, ServletException {
         HttpServletResponse response = (HttpServletResponse) res;
         HttpServletRequest request = (HttpServletRequest) req;
-        if (request.getServletPath().endsWith("/cors/update/json")) {
+        String path = request.getServletPath();
+        if (path.endsWith("/cors/update/json")
+                || path.endsWith("/cors/application/add.json")
+                || path.endsWith("/cors/application/remove.json")
+                || path.endsWith("/cors/application/get.json")) {
             chain.doFilter(req, res);
             return;
         }
@@ -50,6 +55,15 @@ public class SimpleCORSFilter implements Filter {
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with");
 
         String allCookie = request.getParameter("allowCookie");
+        if (ValueWidget.isNullOrEmpty(allCookie)) {
+            //从缓存里获取Credentials 的配置
+            ServletContext servletContext = request.getSession(true).getServletContext();
+            String credentialsConf = (String) servletContext.getAttribute(Const.HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS);
+            System.out.println("credentialsConf :" + credentialsConf);
+            if (!ValueWidget.isNullOrEmpty(credentialsConf)) {
+                allCookie = credentialsConf.split("__")[1];
+            }
+        }
         if ("true".equalsIgnoreCase(allCookie)) {//允许客户端带cookie
             response.setHeader(Const.HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
         } else {

@@ -70,10 +70,15 @@ public class Const {
     }
 
     private static void createSentinelPool(String password, boolean hasPassword) {
-        if (hasPassword) {
-            pool = new JedisSentinelPool("mymaster", sentinels, password);
-        } else {
-            pool = new JedisSentinelPool("mymaster", sentinels);
+        try {
+            if (hasPassword) {
+                pool = new JedisSentinelPool("mymaster", sentinels, password);
+            } else {
+                pool = new JedisSentinelPool("mymaster", sentinels);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("createSentinelPool error", e);
         }
     }
 

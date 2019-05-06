@@ -12,7 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /***
- * 支持ajax 跨域访问
+ * 支持ajax 跨域访问,
+ * 使用: 不需要传递参数allowOrigin,只需要传递allowCookie=true
  * @author huangweii
  * 2015年6月7日
  */

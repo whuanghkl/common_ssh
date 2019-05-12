@@ -21,6 +21,7 @@ import java.io.IOException;
 public class SimpleCORSFilter implements Filter {
     private static final Logger log = LoggerFactory.getLogger(SimpleCORSFilter.class);
     private AllowOriginDto allowOriginDto;
+
     @Override
     public void destroy() {
     }
@@ -64,7 +65,7 @@ public class SimpleCORSFilter implements Filter {
                 allCookie = credentialsConf.split("__")[1];
             }
         }
-        if ("true".equalsIgnoreCase(allCookie)) {//允许客户端带cookie
+        if (Boolean.TRUE.toString().equalsIgnoreCase(allCookie)) {//允许客户端带cookie
             response.setHeader(Const.HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
         } else {
             response.setHeader(Const.HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS, String.valueOf(this.allowOriginDto.getAccessControlAllowCredentials()));

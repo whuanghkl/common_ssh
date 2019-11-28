@@ -53,7 +53,7 @@ public class SimpleCORSFilter implements Filter {
         response.setHeader("Access-Control-Allow-Origin", allOrigin);
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE,PUT");
         response.setHeader("Access-Control-Max-Age", "3600");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type,x-requested-with,eagleeye-sessionid,eagleeye-pappname");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type,x-requested-with,eagleeye-sessionid,eagleeye-pappname,eagleeye-traceid");
 
         String allCookie = request.getParameter("allowCookie");
         if (ValueWidget.isNullOrEmpty(allCookie)) {

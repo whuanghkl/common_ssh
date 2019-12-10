@@ -2,6 +2,7 @@ package com.common.web.filter;
 
 import com.common.dict.Const;
 import com.common.dto.AllowOriginDto;
+import com.common.util.PropsReadUtil;
 import com.string.widget.util.ValueWidget;
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Properties;
 
 /***
  * 支持ajax 跨域访问,
@@ -21,6 +23,7 @@ import java.io.IOException;
 public class SimpleCORSFilter implements Filter {
     private static final Logger log = LoggerFactory.getLogger(SimpleCORSFilter.class);
     private AllowOriginDto allowOriginDto;
+    private static String configPath = "config/custom_cors.properties";
 
     @Override
     public void destroy() {
@@ -50,10 +53,19 @@ public class SimpleCORSFilter implements Filter {
                 allOrigin = this.allowOriginDto.getAccessControlAllowOrigin();
             }
         }*/
+
+        Properties properties = PropsReadUtil.getProperties(true, configPath);
+        String extraAllowHeaders = null;
+        if (null != properties) {
+            extraAllowHeaders = properties.getProperty("cors.allowedheader");
+        }
+
         response.setHeader("Access-Control-Allow-Origin", allOrigin);
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE,PUT");
         response.setHeader("Access-Control-Max-Age", "3600");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type,x-requested-with,eagleeye-sessionid,eagleeye-pappname,eagleeye-traceid");
+        response.setHeader("Access-Control-Allow-Headers", ("Content-Type,x-requested-with,eagleeye-sessionid,eagleeye-pappname," +
+                "Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma, Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With,userId,Authorization,SessionToken,JSESSIONID,token," +
+                (ValueWidget.isNullOrEmpty(extraAllowHeaders) ? "" : extraAllowHeaders)).replace(",,", ","));
 
         String allCookie = request.getParameter("allowCookie");
         if (ValueWidget.isNullOrEmpty(allCookie)) {

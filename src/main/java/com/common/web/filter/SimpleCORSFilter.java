@@ -65,7 +65,8 @@ public class SimpleCORSFilter implements Filter {
         response.setHeader("Access-Control-Max-Age", "3600");
         response.setHeader("Access-Control-Allow-Headers", ("Content-Type,x-requested-with,eagleeye-sessionid,eagleeye-pappname," +
                 "Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma, Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With,userId,Authorization,SessionToken,JSESSIONID,token," +
-                (ValueWidget.isNullOrEmpty(extraAllowHeaders) ? "" : extraAllowHeaders)).replace(",,", ","));
+                (ValueWidget.isNullOrEmpty(extraAllowHeaders) ? "" : extraAllowHeaders))
+                .replace(", ,", ",").replace(",,", ","));
 
         String allCookie = request.getParameter("allowCookie");
         if (ValueWidget.isNullOrEmpty(allCookie)) {

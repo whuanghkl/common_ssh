@@ -17,6 +17,9 @@ import java.util.Properties;
 /***
  * 支持ajax 跨域访问,
  * 使用: 不需要传递参数allowOrigin,只需要传递allowCookie=true
+ * 配置项:
+ *
+ * cors.switcher:true/false
  * @author huangweii
  * 2015年6月7日
  */
@@ -92,7 +95,21 @@ public class SimpleCORSFilter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
         System.out.println("SimpleCORSFilter init:");
         this.allowOriginDto = new AllowOriginDto();
-        filterConfig.getServletContext().setAttribute(Const.ATTRIBUTE_ALLOW_ORIGIN_DTO, this.allowOriginDto);
+        ServletContext servletContext = filterConfig.getServletContext();
+        servletContext.setAttribute(Const.ATTRIBUTE_ALLOW_ORIGIN_DTO, this.allowOriginDto);
+
+        try {
+            Properties properties = PropsReadUtil.getProperties(true, configPath);
+//            String extraAllowHeaders = null;
+            if (null != properties) {
+                String switch2 = properties.getProperty("cors.switcher");
+                if (Boolean.TRUE.toString().equalsIgnoreCase(switch2)) {
+                    servletContext.setAttribute(Const.HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS, "Credentials__" + Boolean.TRUE.toString());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

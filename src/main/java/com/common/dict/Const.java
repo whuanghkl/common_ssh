@@ -82,4 +82,9 @@ public class Const {
         }
     }
 
+    /***
+     * .json
+     */
+    public static final String STUB_FILE_SUFFIX = ".xml";
+    public static final String STUB_FILE_SUFFIX_JSON = ".json";
 }

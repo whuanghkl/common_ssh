@@ -1,0 +1,24 @@
+{
+  "content": {
+    "appId": 37,
+    "code": "EXECUTERULE_fa9eca87-b541-4f5a-8c83-0b232dc08346__99",
+    "gmtModified": 1574390806000,
+    "id": 1864,
+    "modifier": "WB390220",
+    "modifyUserVO": {
+      "displayEnName": "wangzhanshuai",
+      "displayName": "汪詹帅",
+      "orderNum": 0,
+      "userId": "WB390220"
+    },
+    "name": "EXECUTERULE_fa9eca87-b541-4f5a-8c83-0b232dc08346",
+    "ruleSchema": "{\n          \"fieldBehavior\": \"NORMAL\"\n        }",
+    "script": "( (aecp_logic_tenant_id == 10000 || aecp_logic_tenant_id == \"10000\") ) &&  (org_id == \"60951\" )",
+    "scriptType": 0,
+    "status": 1,
+    "type": 0,
+    "version": "2019-11-22 10:46:46.906"
+  },
+  "errorLevel": 0,
+  "success": true
+}
